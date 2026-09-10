@@ -43,6 +43,7 @@ Self-hosted multi-device WhatsApp bot built on **[@whiskeysockets/baileys](https
 | `ADMIN_EMAIL` | _(empty)_ | Admin panel login email (**required** for `/admin`) |
 | `ADMIN_PASSWORD` | _(empty)_ | Admin panel login password (**required** for `/admin`) |
 | `ADMIN_TOKEN` | _(empty)_ | Optional Bearer API token / cookie signing secret |
+| `RUN_BOT` | _(see notes)_ | Set `true` to force Baileys worker. On **Vercel**, bot is skipped unless `RUN_BOT=true`. On **Heroku/local**, bot starts by default (`VERCEL` unset). |
 
 Copy `.env.example` to `.env` and edit. **Never commit real credentials.**
 
@@ -129,13 +130,37 @@ public/admin/
   login.html / index.html / css/ / js/
 ```
 
+## Deploy platforms
+
+| Platform | Role | Notes |
+|----------|------|--------|
+| **Vercel** | Admin panel + health/API | Serverless Express via `api/index.js`. Baileys **does not** start (no long-lived WA socket on serverless). |
+| **Heroku** | WhatsApp bot worker + admin | Long-lived Node process: Baileys + Express. Set `ADMIN_*` and `OWNER_NUMBER`. |
+
+## Deploy on Vercel (admin panel)
+
+Use Vercel for the **website admin** and health JSON only. Pairing / WhatsApp traffic stays on Heroku (or another always-on host).
+
+1. Import the GitHub repo in [Vercel](https://vercel.com/new) (Framework Preset: Other).
+2. Set env vars: `ADMIN_EMAIL`, `ADMIN_PASSWORD`, optional `ADMIN_TOKEN`, `MONGODB_URL`, `BOT_NAME`, etc. **Do not** hardcode credentials.
+3. Deploy. Open `https://your-app.vercel.app/` for health JSON and `/admin` for the panel.
+4. `vercel.json` rewrites all routes to the serverless function `api/index.js`, which exports the Express `app` from `index.js`. Static files under `public/admin` are included via `includeFiles`.
+5. Leave `RUN_BOT` unset on Vercel. Only set `RUN_BOT=true` on a long-lived host if you intentionally want Baileys there (not recommended on Vercel).
+
+```bash
+# Optional CLI
+npm i -g vercel
+vercel
+```
+
 ## Deploy on Heroku
 
 1. Create a new Heroku app and connect this GitHub repo (or use the Deploy button / `heroku create`).  
 2. Set config vars from the table above (`OWNER_NUMBER`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, optional AI / Mongo keys).  
 3. Enable the **ffmpeg** buildpack (listed in `app.json`) or deploy via `heroku.yml` + Docker.  
-4. Scale the `web` dyno. Open the app URL for health JSON; open `/admin` for the panel.  
-5. Watch logs (`heroku logs --tail`) and scan the QR once.
+4. Scale the `web` dyno (Baileys starts automatically when `VERCEL` is unset). Open the app URL for health JSON; open `/admin` for the panel.  
+5. Watch logs (`heroku logs --tail`) and scan the QR once.  
+6. Optional: set `RUN_BOT=true` explicitly for clarity (default on Heroku is already to run the bot).
 
 ```bash
 heroku create your-app-name
@@ -162,7 +187,9 @@ Examples: `.ping` `.yts lo-fi` `.ai hello` `.sticker` (reply image) `.tagall` `.
 ## Project layout
 
 ```
-index.js          # entry + Baileys + express + admin mount
+index.js          # Express app + conditional Baileys; default export for Vercel
+api/index.js      # Vercel serverless entry (exports Express app)
+vercel.json       # rewrites + include public/admin for serverless
 config.js         # env-only config
 command.js        # cmd() registry
 lib/              # helpers, msg serialize, mongo, admin/

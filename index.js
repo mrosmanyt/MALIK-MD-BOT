@@ -193,7 +193,7 @@ async function startBot() {
   return sock;
 }
 
-// Health + Admin server
+// Health + Admin server (always mounted — used by Heroku and Vercel)
 const app = express();
 app.get('/', (_req, res) => {
   res.json({
@@ -203,17 +203,32 @@ app.get('/', (_req, res) => {
     commands: commands.length,
     version: config.VERSION,
     admin: '/admin',
+    vercel: Boolean(process.env.VERCEL),
+    botWorker: process.env.RUN_BOT === 'true' || !process.env.VERCEL,
   });
 });
 app.get('/health', (_req, res) => res.send('ok'));
 
 mountAdmin(app, { startTime });
 
-app.listen(config.PORT, () =>
-  console.log(`[HTTP] health + admin on :${config.PORT}`)
-);
+const isVercel = Boolean(process.env.VERCEL);
+// On Vercel skip Baileys by default so the serverless deploy does not crash.
+// Heroku / local: start the WhatsApp worker. Override with RUN_BOT=true on Vercel if needed.
+const shouldRunBot = process.env.RUN_BOT === 'true' || !isVercel;
 
-startBot().catch((e) => {
-  console.error('Fatal:', e);
-  process.exit(1);
-});
+if (!isVercel) {
+  app.listen(config.PORT, () =>
+    console.log(`[HTTP] health + admin on :${config.PORT}`)
+  );
+}
+
+if (shouldRunBot) {
+  startBot().catch((e) => {
+    console.error('Fatal:', e);
+    process.exit(1);
+  });
+} else {
+  console.log('[BOOT] Skipping Baileys (Vercel admin/API only). Set RUN_BOT=true to enable the worker.');
+}
+
+export default app;

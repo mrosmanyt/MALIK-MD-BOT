@@ -1,0 +1,69 @@
+{
+  "name": "MALIK-MD-BOT",
+  "description": "Self-hosted MALIK-MD WhatsApp bot (Baileys + plugins)",
+  "repository": "https://github.com/mrosmanyt/MALIK-MD-BOT",
+  "logo": "https://node-js-sample.herokuapp.com/node.png",
+  "keywords": ["whatsapp", "baileys", "bot", "malik-md"],
+  "success_url": "/",
+  "stack": "heroku-24",
+  "env": {
+    "PREFIX": {
+      "description": "Command prefix",
+      "value": "."
+    },
+    "BOT_NAME": {
+      "description": "Bot display name",
+      "value": "MALIK-MD"
+    },
+    "OWNER_NAME": {
+      "description": "Owner display name",
+      "value": "MALIK"
+    },
+    "OWNER_NUMBER": {
+      "description": "Owner number with country code, no +",
+      "value": ""
+    },
+    "MODE": {
+      "description": "public | private | inbox | groups",
+      "value": "public"
+    },
+    "MONGODB_URL": {
+      "description": "Optional MongoDB connection string",
+      "required": false
+    },
+    "OPENAI_API_KEY": {
+      "description": "Optional OpenAI API key",
+      "required": false
+    },
+    "GROQ_API_KEY": {
+      "description": "Optional Groq API key",
+      "required": false
+    },
+    "PACK_NAME": {
+      "description": "Sticker pack name",
+      "value": "MALIK-MD"
+    },
+    "PACK_AUTHOR": {
+      "description": "Sticker pack author",
+      "value": "MALIK"
+    },
+    "ANTILINK": {
+      "description": "Default antilink true/false",
+      "value": "false"
+    },
+    "TIME_ZONE": {
+      "description": "Timezone string",
+      "value": "Asia/Karachi"
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "buildpacks": [
+    { "url": "https://github.com/jonathanong/heroku-buildpack-ffmpeg-latest.git" },
+    { "url": "heroku/nodejs" }
+  ]
+}

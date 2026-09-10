@@ -1,0 +1,42 @@
+{
+  "name": "malik-md-bot",
+  "version": "1.0.0",
+  "description": "MALIK-MD — self-hosted multi-device WhatsApp bot (Baileys + plugins)",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "whatsapp",
+    "baileys",
+    "bot",
+    "malik-md"
+  ],
+  "author": "MALIK",
+  "license": "MIT",
+  "dependencies": {
+    "@vitalets/google-translate-api": "^9.2.1",
+    "@whiskeysockets/baileys": "6.7.24",
+    "axios": "^1.11.0",
+    "cheerio": "^1.1.2",
+    "dotenv": "^16.6.1",
+    "express": "^4.21.2",
+    "file-type": "^16.5.4",
+    "fluent-ffmpeg": "^2.1.3",
+    "form-data": "^4.0.4",
+    "jimp": "^0.16.13",
+    "moment-timezone": "^0.6.0",
+    "mongodb": "^6.18.0",
+    "mongoose": "^8.17.1",
+    "node-fetch": "^3.3.2",
+    "pino": "^9.9.0",
+    "qrcode-terminal": "^0.12.0",
+    "wa-sticker-formatter": "^4.4.4",
+    "yt-search": "^2.13.1"
+  }
+}

@@ -1,6 +1,6 @@
 {
   "name": "malik-md-bot",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "MALIK-MD — self-hosted multi-device WhatsApp bot (Baileys + plugins)",
   "main": "index.js",
   "type": "module",

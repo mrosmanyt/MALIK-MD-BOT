@@ -8,11 +8,23 @@ Self-hosted multi-device WhatsApp bot built on **[@whiskeysockets/baileys](https
 
 ## Features
 
-- Plugin commands across fun, games, downloaders, AI, group admin, stickers/media, tools, and search  
+- **1800+** plugin commands across fun, games, downloaders, AI, anime, logo, group admin, stickers/media, tools, search, and bulk utility packs  
 - Express health endpoint (`/` and `/health`) plus **Admin UI** at `/admin`  
 - Optional MongoDB via `MONGODB_URL` for group flags and admin user records  
 - QR pairing with multi-file auth in `./session`  
 - Dockerfile + Heroku `app.json`
+
+
+## Command sources
+
+Command ideas and working APIs were adapted (cleaned / reimplemented for this bot’s `cmd()` API) from:
+
+- [JawadTechXD/JAWAD-MD](https://github.com/JawadTechXD/JAWAD-MD) — plugins such as ai, anime, downloader, fun, general, group, logo, owner, search, system, tools (upstream plugins are obfuscated; handlers here are clean reimplementations)
+- [men814586-ship-it/malikmdprivate2](https://github.com/men814586-ship-it/malikmdprivate2) — selected `plugins/*.js` ports
+
+**Not ported:** mass-report, remote multi-session botnet controls, hardcoded Mongo/API secrets, and spammy `unban0–99` / duplicate AI-alias floods.
+
+Send `.menu` in WhatsApp for the live categorized list (includes bulk packs).
 
 ## Requirements
 
@@ -137,20 +149,27 @@ public/admin/
 | **Vercel** | Admin panel + health/API | Serverless Express via `api/index.js`. Baileys **does not** start (no long-lived WA socket on serverless). |
 | **Heroku** | WhatsApp bot worker + admin | Long-lived Node process: Baileys + Express. Set `ADMIN_*` and `OWNER_NUMBER`. |
 
-## Deploy on Vercel (admin panel)
+## Deploy on Vercel (admin panel) — self-deploy checklist
 
 Use Vercel for the **website admin** and health JSON only. Pairing / WhatsApp traffic stays on Heroku (or another always-on host).
 
-1. Import the GitHub repo in [Vercel](https://vercel.com/new) (Framework Preset: Other).
-2. Set env vars: `ADMIN_EMAIL`, `ADMIN_PASSWORD`, optional `ADMIN_TOKEN`, `MONGODB_URL`, `BOT_NAME`, etc. **Do not** hardcode credentials.
-3. Deploy. Open `https://your-app.vercel.app/` for health JSON and `/admin` for the panel.
-4. `vercel.json` rewrites all routes to the serverless function `api/index.js`, which exports the Express `app` from `index.js`. Static files under `public/admin` are included via `includeFiles`.
-5. Leave `RUN_BOT` unset on Vercel. Only set `RUN_BOT=true` on a long-lived host if you intentionally want Baileys there (not recommended on Vercel).
+1. Fork or clone [mrosmanyt/MALIK-MD-BOT](https://github.com/mrosmanyt/MALIK-MD-BOT).
+2. Open [vercel.com/new](https://vercel.com/new) → **Import** this GitHub repo (Framework Preset: **Other** / no build command).
+3. Set environment variables (Project → Settings → Environment Variables):
+   - **Required for `/admin`:** `ADMIN_EMAIL`, `ADMIN_PASSWORD`
+   - **Optional:** `ADMIN_TOKEN`, `MONGODB_URL`, `BOT_NAME`, `OWNER_NAME`, `OWNER_NUMBER`, `PREFIX`, `MODE`
+4. Deploy. Confirm:
+   - `https://YOUR-APP.vercel.app/` → JSON health (`bot`, `commands`, `admin`)
+   - `https://YOUR-APP.vercel.app/admin` → login with the env credentials
+5. Keep `RUN_BOT` **unset** on Vercel (Baileys needs a long-lived process; use Heroku/VPS/Docker for WhatsApp).
+6. `vercel.json` rewrites all routes to `api/index.js` (Express app). Do not delete `api/index.js`, `vercel.json`, or `public/admin/`.
 
 ```bash
-# Optional CLI
+# Optional CLI from your machine
 npm i -g vercel
-vercel
+vercel login
+vercel   # link + deploy
+vercel env pull   # optional
 ```
 
 ## Deploy on Heroku
@@ -180,7 +199,7 @@ docker run -p 3000:3000 --env-file .env -v "$(pwd)/session:/app/session" -v "$(p
 
 ## Commands
 
-Send `.menu` or `.help` in WhatsApp for the full categorized list.
+Send `.menu` or `.help` in WhatsApp for the full categorized list (**1800+** registered commands including bulk packs).
 
 Examples: `.ping` `.yts lo-fi` `.ai hello` `.sticker` (reply image) `.tagall` `.weather Lahore`
 

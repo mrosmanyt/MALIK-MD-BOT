@@ -27,7 +27,7 @@ const config = {
   WELCOME: bool(process.env.WELCOME, false),
   TIME_ZONE: process.env.TIME_ZONE || 'Asia/Karachi',
   SESSION_DIR: process.env.SESSION_DIR || './session',
-  VERSION: '1.0.0',
+  VERSION: '1.1.0',
   // Admin panel — NEVER hardcode these; set via environment only
   ADMIN_EMAIL: process.env.ADMIN_EMAIL || '',
   ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || '',

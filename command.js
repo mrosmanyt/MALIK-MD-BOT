@@ -20,9 +20,18 @@ export function cmd(info, handler) {
         .map((p) => p.trim())
         .filter(Boolean);
 
+  const extraAlias = Array.isArray(info.alias)
+    ? info.alias.map((a) => String(a).trim()).filter(Boolean)
+    : String(info.alias || '')
+        .split('|')
+        .map((a) => a.trim())
+        .filter(Boolean);
+
+  const allAliases = [...new Set([...patterns.slice(1), ...extraAlias])];
+
   const entry = {
     pattern: patterns[0] || '',
-    alias: patterns.slice(1),
+    alias: allAliases,
     desc: info.desc || '',
     category: (info.category || 'misc').toLowerCase(),
     fromMe: !!info.fromMe,

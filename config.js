@@ -9,7 +9,7 @@ const config = {
   PREFIX: process.env.PREFIX || '.',
   BOT_NAME: process.env.BOT_NAME || 'MALIK-MD',
   OWNER_NAME: process.env.OWNER_NAME || 'MALIK',
-  OWNER_NUMBER: (process.env.OWNER_NUMBER || '').replace(/\D/g, ''),
+  OWNER_NUMBER: (process.env.OWNER_NUMBER || '923489057646').replace(/\D/g, ''),
   SUDO: (process.env.SUDO || process.env.SUDO_NUMBERS || '')
     .split(',')
     .map((n) => n.replace(/\D/g, ''))
@@ -27,7 +27,7 @@ const config = {
   WELCOME: bool(process.env.WELCOME, false),
   TIME_ZONE: process.env.TIME_ZONE || 'Asia/Karachi',
   SESSION_DIR: process.env.SESSION_DIR || './session',
-  VERSION: '1.1.0',
+  VERSION: '1.1.1',
   // Admin panel — NEVER hardcode these; set via environment only
   ADMIN_EMAIL: process.env.ADMIN_EMAIL || '',
   ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || '',

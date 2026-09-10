@@ -156,13 +156,16 @@ Use Vercel for the **website admin** and health JSON only. Pairing / WhatsApp tr
 1. Fork or clone [mrosmanyt/MALIK-MD-BOT](https://github.com/mrosmanyt/MALIK-MD-BOT).
 2. Open [vercel.com/new](https://vercel.com/new) → **Import** this GitHub repo (Framework Preset: **Other** / no build command).
 3. Set environment variables (Project → Settings → Environment Variables):
-   - **Required for `/admin`:** `ADMIN_EMAIL`, `ADMIN_PASSWORD`
-   - **Optional:** `ADMIN_TOKEN`, `MONGODB_URL`, `BOT_NAME`, `OWNER_NAME`, `OWNER_NUMBER`, `PREFIX`, `MODE`
-4. Deploy. Confirm:
-   - `https://YOUR-APP.vercel.app/` → JSON health (`bot`, `commands`, `admin`)
+   - **Required for `/admin`:** `ADMIN_EMAIL` (e.g. `mrosmanyt@gmail.com`), `ADMIN_PASSWORD` (set in Vercel UI only — never commit)
+   - **Owner / WhatsApp:** `OWNER_NUMBER` (e.g. `923489057646`)
+   - **Optional:** `ADMIN_TOKEN`, `MONGODB_URL`, `BOT_NAME`, `OWNER_NAME`, `PREFIX`, `MODE`
+4. Deploy (or **Redeploy** latest `main`). Confirm:
+   - `https://YOUR-APP.vercel.app/` → JSON health (`bot`, `commands`, `admin`) — `commands` should be **1800+** (loads without `RUN_BOT`)
    - `https://YOUR-APP.vercel.app/admin` → login with the env credentials
-5. Keep `RUN_BOT` **unset** on Vercel (Baileys needs a long-lived process; use Heroku/VPS/Docker for WhatsApp).
-6. `vercel.json` rewrites all routes to `api/index.js` (Express app). Do not delete `api/index.js`, `vercel.json`, or `public/admin/`.
+5. Keep `RUN_BOT` **unset** on Vercel (Baileys needs a long-lived process; use Heroku/VPS/Docker for WhatsApp). npm deprecation warnings during install are not fatal.
+6. `vercel.json` rewrites all routes to `api/index.js` and bundles `public/**`, `plugins/**`, `lib/**`. Do not delete `api/index.js`, `vercel.json`, or `public/admin/`.
+
+> **Redeploy latest `main`** after pulling this fix so Vercel is not stuck on an old commit (`commands: 0`). Command count loads on the admin/API path without enabling Baileys/`RUN_BOT`. npm deprecation warnings are not fatal.
 
 ```bash
 # Optional CLI from your machine
@@ -208,7 +211,7 @@ Examples: `.ping` `.yts lo-fi` `.ai hello` `.sticker` (reply image) `.tagall` `.
 ```
 index.js          # Express app + conditional Baileys; default export for Vercel
 api/index.js      # Vercel serverless entry (exports Express app)
-vercel.json       # rewrites + include public/admin for serverless
+vercel.json       # rewrites + include public/**, plugins/**, lib/** for serverless
 config.js         # env-only config
 command.js        # cmd() registry
 lib/              # helpers, msg serialize, mongo, admin/

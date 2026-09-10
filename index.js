@@ -25,17 +25,30 @@ global.botStart = startTime;
 
 const logger = pino({ level: process.env.LOG_LEVEL || 'silent' });
 
+let pluginsLoaded = false;
+let pluginsLoading = null;
+
+/** Idempotent plugin loader — safe to call from startBot and the Vercel/admin path. */
 async function loadPlugins() {
-  const dir = path.join(__dirname, 'plugins');
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  const files = fs.readdirSync(dir).filter((f) => f.endsWith('.js'));
-  for (const file of files) {
-    const full = path.join(dir, file);
-    await import(pathToFileURL(full).href);
-    console.log(`[PLUGIN] loaded ${file}`);
-  }
-  console.log(`[PLUGIN] ${commands.length} commands registered`);
+  if (pluginsLoaded) return;
+  if (pluginsLoading) return pluginsLoading;
+  pluginsLoading = (async () => {
+    const dir = path.join(__dirname, 'plugins');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    const files = fs.readdirSync(dir).filter((f) => f.endsWith('.js'));
+    for (const file of files) {
+      const full = path.join(dir, file);
+      await import(pathToFileURL(full).href);
+      console.log(`[PLUGIN] loaded ${file}`);
+    }
+    pluginsLoaded = true;
+    console.log(`[PLUGIN] ${commands.length} commands registered`);
+  })();
+  return pluginsLoading;
 }
+
+/** Started at boot so Vercel (Baileys skipped) still fills the command catalog. */
+const pluginsReady = loadPlugins();
 
 function modeAllows(m) {
   const mode = config.MODE;
@@ -195,7 +208,8 @@ async function startBot() {
 
 // Health + Admin server (always mounted — used by Heroku and Vercel)
 const app = express();
-app.get('/', (_req, res) => {
+app.get('/', async (_req, res) => {
+  await pluginsReady;
   res.json({
     bot: config.BOT_NAME,
     status: 'online',
@@ -209,7 +223,7 @@ app.get('/', (_req, res) => {
 });
 app.get('/health', (_req, res) => res.send('ok'));
 
-mountAdmin(app, { startTime });
+mountAdmin(app, { startTime, pluginsReady });
 
 const isVercel = Boolean(process.env.VERCEL);
 // On Vercel skip Baileys by default so the serverless deploy does not crash.

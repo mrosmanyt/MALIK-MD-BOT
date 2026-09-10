@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MALIK-MD Admin Login</title>
+  <link rel="stylesheet" href="/admin/css/style.css" />
+</head>
+<body>
+  <div class="login-wrap">
+    <form class="login-card" id="loginForm" autocomplete="on">
+      <h1>MALIK-MD Admin</h1>
+      <p class="sub">Sign in with credentials from your server environment.</p>
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" required placeholder="admin@example.com" autocomplete="username" />
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" required placeholder="••••••••" autocomplete="current-password" />
+      <button class="full" type="submit" id="submitBtn">Sign in</button>
+      <div class="error" id="error"></div>
+      <p class="sub" style="margin-top:1rem;margin-bottom:0">
+        Credentials are never stored in the frontend source. Set
+        <code>ADMIN_EMAIL</code> / <code>ADMIN_PASSWORD</code> on the host.
+      </p>
+    </form>
+  </div>
+  <script src="/admin/js/login.js" type="module"></script>
+</body>
+</html>

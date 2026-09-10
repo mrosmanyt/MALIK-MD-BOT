@@ -1,6 +1,6 @@
 # MALIK-MD-BOT
 
-Self-hosted multi-device WhatsApp bot built on **[@whiskeysockets/baileys](https://github.com/WhiskeySockets/Baileys)** with a clean ESM plugin system.
+Self-hosted multi-device WhatsApp bot built on **[@whiskeysockets/baileys](https://github.com/WhiskeySockets/Baileys)** with a clean ESM plugin system and a modular **website admin panel**.
 
 - **No** remote zip / obfuscated loaders  
 - **No** jawadtechyt runtime dependency  
@@ -9,8 +9,8 @@ Self-hosted multi-device WhatsApp bot built on **[@whiskeysockets/baileys](https
 ## Features
 
 - Plugin commands across fun, games, downloaders, AI, group admin, stickers/media, tools, and search  
-- Express health endpoint (`/` and `/health`)  
-- Optional MongoDB via `MONGODB_URL` for group flags (antilink, etc.)  
+- Express health endpoint (`/` and `/health`) plus **Admin UI** at `/admin`  
+- Optional MongoDB via `MONGODB_URL` for group flags and admin user records  
 - QR pairing with multi-file auth in `./session`  
 - Dockerfile + Heroku `app.json`
 
@@ -30,7 +30,7 @@ Self-hosted multi-device WhatsApp bot built on **[@whiskeysockets/baileys](https
 | `OWNER_NUMBER` | _(empty)_ | Country code + number, no `+` |
 | `SUDO` | _(empty)_ | Extra owner numbers, comma-separated |
 | `MODE` | `public` | `public` / `private` / `inbox` / `groups` |
-| `PORT` | `3000` | HTTP health port |
+| `PORT` | `3000` | HTTP health + admin port |
 | `MONGODB_URL` | _(empty)_ | Optional Mongo connection string |
 | `OPENAI_API_KEY` | _(empty)_ | Chat + DALL·E |
 | `GROQ_API_KEY` | _(empty)_ | Fast chat models |
@@ -40,8 +40,11 @@ Self-hosted multi-device WhatsApp bot built on **[@whiskeysockets/baileys](https
 | `ANTILINK` | `false` | Default group antilink |
 | `TIME_ZONE` | `Asia/Karachi` | |
 | `SESSION_DIR` | `./session` | Auth folder |
+| `ADMIN_EMAIL` | _(empty)_ | Admin panel login email (**required** for `/admin`) |
+| `ADMIN_PASSWORD` | _(empty)_ | Admin panel login password (**required** for `/admin`) |
+| `ADMIN_TOKEN` | _(empty)_ | Optional Bearer API token / cookie signing secret |
 
-Copy `.env.example` to `.env` and edit.
+Copy `.env.example` to `.env` and edit. **Never commit real credentials.**
 
 ## Run locally
 
@@ -55,19 +58,90 @@ npm start
 
 Scan the QR printed in the terminal (WhatsApp → Linked Devices). Session files are saved under `session/`.
 
+## Website admin panel
+
+### Open the admin
+
+1. Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `.env` (optional `ADMIN_TOKEN`).
+2. Start the bot (`npm start`).
+3. Open `http://localhost:3000/admin` (or your host/`PORT`).
+4. Sign in with the same email/password from the environment.
+
+Credentials are read from the environment only — they are **never** hardcoded in HTML or source.
+
+### What the dashboard shows
+
+| Page | Data |
+|------|------|
+| **Overview** | Uptime, command count, Mongo status, tracked user count, mode/prefix |
+| **Users** | Lightweight records upserted on inbound messages: `jid`, `pushName`, `lastSeen`, `messageCount` (Mongo if configured, else `data/users.json`) |
+| **Commands** | Catalog from the plugin command registry (pattern, category, description, owner-only) |
+| **Settings** | Non-secret config view; API keys and passwords are **redacted** |
+
+### JSON API (`/api/admin/*`)
+
+| Method | Path | Auth | Purpose |
+|--------|------|------|---------|
+| `POST` | `/api/admin/login` | — | Cookie + token session |
+| `POST` | `/api/admin/logout` | — | Clear session cookie |
+| `GET` | `/api/admin/me` | session/token | Current admin |
+| `GET` | `/api/admin/overview` | ✓ | Stats |
+| `GET` | `/api/admin/users?limit=&skip=&search=` | ✓ | User list |
+| `GET` | `/api/admin/commands` | ✓ | Command catalog |
+| `GET` | `/api/admin/settings` | ✓ | Redacted settings |
+
+Auth: HttpOnly signed cookie after login, or `Authorization: Bearer <ADMIN_TOKEN>` / session token.
+
+### How to add a new admin page (extension steps)
+
+The admin stack is modular under `lib/admin/` and `public/admin/` so AI tools or humans can extend it safely.
+
+1. **Add an API route** (protected automatically) using the helper:
+
+```js
+// e.g. in a plugin or lib/my-feature.js after mount, or before start:
+import { registerAdminRoute } from '../lib/admin/index.js';
+
+registerAdminRoute('get', '/extras', (req, res) => {
+  res.json({ hello: 'world', admin: req.admin?.email });
+});
+// Available at GET /api/admin/extras
+```
+
+2. **Add UI** under `public/admin/`:
+   - Create `public/admin/js/extras.js` (or extend `app.js`) to `fetch('/api/admin/extras', { credentials: 'include' })`.
+   - Add a nav button + `<section class="page" id="page-extras">` in `public/admin/index.html`.
+   - Wire the nav in `public/admin/js/app.js` (`setPage('extras')` + loader).
+
+3. **Keep secrets out of the client** — any new settings view must redact tokens/keys the same way `publicSettings()` does in `lib/admin/routes.js`.
+
+4. **Do not** add remote WhatsApp control, mass-report, or hardcoded passwords.
+
+### Admin module layout
+
+```
+lib/admin/
+  auth.js      # env credentials, signed cookie / Bearer token
+  users.js     # Mongo or data/users.json upsert + list
+  routes.js    # /api/admin/* + registerAdminRoute + mountAdmin
+  index.js     # public exports
+public/admin/
+  login.html / index.html / css/ / js/
+```
+
 ## Deploy on Heroku
 
 1. Create a new Heroku app and connect this GitHub repo (or use the Deploy button / `heroku create`).  
-2. Set config vars from the table above (`OWNER_NUMBER`, optional AI / Mongo keys).  
+2. Set config vars from the table above (`OWNER_NUMBER`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, optional AI / Mongo keys).  
 3. Enable the **ffmpeg** buildpack (listed in `app.json`) or deploy via `heroku.yml` + Docker.  
-4. Scale the `web` dyno. Open the app URL for health JSON.  
+4. Scale the `web` dyno. Open the app URL for health JSON; open `/admin` for the panel.  
 5. Watch logs (`heroku logs --tail`) and scan the QR once.
 
 ```bash
 heroku create your-app-name
 heroku buildpacks:add https://github.com/jonathanong/heroku-buildpack-ffmpeg-latest.git
 heroku buildpacks:add heroku/nodejs
-heroku config:set OWNER_NUMBER=923xxxxxxxxx MODE=public
+heroku config:set OWNER_NUMBER=923xxxxxxxxx MODE=public ADMIN_EMAIL=you@example.com ADMIN_PASSWORD='strong-secret'
 git push heroku main
 heroku logs --tail
 ```
@@ -76,7 +150,7 @@ heroku logs --tail
 
 ```bash
 docker build -t malik-md-bot .
-docker run -p 3000:3000 --env-file .env -v "$(pwd)/session:/app/session" malik-md-bot
+docker run -p 3000:3000 --env-file .env -v "$(pwd)/session:/app/session" -v "$(pwd)/data:/app/data" malik-md-bot
 ```
 
 ## Commands
@@ -88,11 +162,13 @@ Examples: `.ping` `.yts lo-fi` `.ai hello` `.sticker` (reply image) `.tagall` `.
 ## Project layout
 
 ```
-index.js          # entry + Baileys + express
+index.js          # entry + Baileys + express + admin mount
 config.js         # env-only config
 command.js        # cmd() registry
-lib/              # helpers, msg serialize, mongo
+lib/              # helpers, msg serialize, mongo, admin/
 plugins/          # feature plugins by category
+public/admin/     # admin static UI
+data/             # JSON fallback for admin users (gitignored)
 session/          # auth (gitignored)
 ```
 

@@ -3,8 +3,13 @@
   "description": "Self-hosted MALIK-MD WhatsApp bot (Baileys + plugins)",
   "repository": "https://github.com/mrosmanyt/MALIK-MD-BOT",
   "logo": "https://node-js-sample.herokuapp.com/node.png",
-  "keywords": ["whatsapp", "baileys", "bot", "malik-md"],
-  "success_url": "/",
+  "keywords": [
+    "whatsapp",
+    "baileys",
+    "bot",
+    "malik-md"
+  ],
+  "success_url": "/admin",
   "stack": "heroku-24",
   "env": {
     "PREFIX": {
@@ -54,6 +59,18 @@
     "TIME_ZONE": {
       "description": "Timezone string",
       "value": "Asia/Karachi"
+    },
+    "ADMIN_EMAIL": {
+      "description": "Admin panel login email (required for /admin)",
+      "required": false
+    },
+    "ADMIN_PASSWORD": {
+      "description": "Admin panel login password (required for /admin)",
+      "required": false
+    },
+    "ADMIN_TOKEN": {
+      "description": "Optional Bearer API token / cookie signing secret",
+      "required": false
     }
   },
   "formation": {
@@ -63,7 +80,11 @@
     }
   },
   "buildpacks": [
-    { "url": "https://github.com/jonathanong/heroku-buildpack-ffmpeg-latest.git" },
-    { "url": "heroku/nodejs" }
+    {
+      "url": "https://github.com/jonathanong/heroku-buildpack-ffmpeg-latest.git"
+    },
+    {
+      "url": "heroku/nodejs"
+    }
   ]
 }

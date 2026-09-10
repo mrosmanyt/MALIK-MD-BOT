@@ -4,6 +4,8 @@ session/*
 !session/.gitkeep
 temp/*
 !temp/.gitkeep
+data/*
+!data/.gitkeep
 *.log
 .DS_Store
 auth_info*/

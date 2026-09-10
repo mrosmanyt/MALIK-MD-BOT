@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MALIK-MD Admin</title>
+  <link rel="stylesheet" href="/admin/css/style.css" />
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-badge">M</div>
+        <div>
+          <strong>MALIK-MD</strong>
+          <span>Admin panel</span>
+        </div>
+      </div>
+      <nav class="nav" id="nav">
+        <button type="button" data-page="overview" class="active">Overview</button>
+        <button type="button" data-page="users">Users</button>
+        <button type="button" data-page="commands">Commands</button>
+        <button type="button" data-page="settings">Settings</button>
+      </nav>
+      <div class="sidebar-foot">
+        <button type="button" class="btn secondary" id="logoutBtn" style="width:100%">Log out</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <h2 id="pageTitle">Overview</h2>
+          <div class="meta" id="pageMeta">Loading…</div>
+        </div>
+        <div class="toolbar">
+          <button type="button" class="btn secondary" id="refreshBtn">Refresh</button>
+        </div>
+      </div>
+
+      <section class="page active" id="page-overview">
+        <div class="cards" id="statCards"></div>
+        <div class="panel">
+          <div class="panel-head"><h3>Bot snapshot</h3></div>
+          <div class="panel-body">
+            <table>
+              <tbody id="overviewTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-users">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Users</h3>
+            <div class="toolbar">
+              <input id="userSearch" type="search" placeholder="Search jid or name…" />
+              <button type="button" class="btn secondary" id="userPrev">Prev</button>
+              <button type="button" class="btn secondary" id="userNext">Next</button>
+            </div>
+          </div>
+          <div class="panel-body">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>JID</th>
+                  <th>Messages</th>
+                  <th>Last seen</th>
+                </tr>
+              </thead>
+              <tbody id="usersBody"></tbody>
+            </table>
+            <div class="empty" id="usersEmpty" style="display:none">No users tracked yet. They appear when people message the bot.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-commands">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Commands catalog</h3>
+            <div class="toolbar">
+              <input id="cmdSearch" type="search" placeholder="Filter commands…" />
+              <select id="cmdCategory"><option value="">All categories</option></select>
+            </div>
+          </div>
+          <div class="panel-body">
+            <table>
+              <thead>
+                <tr>
+                  <th>Command</th>
+                  <th>Category</th>
+                  <th>Description</th>
+                  <th>Owner</th>
+                </tr>
+              </thead>
+              <tbody id="commandsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-settings">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Non-secret settings</h3>
+            <span class="pill">Secrets are redacted</span>
+          </div>
+          <div class="settings-grid" id="settingsGrid"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="/admin/js/app.js" type="module"></script>
+</body>
+</html>

@@ -16,6 +16,7 @@ import { commands, findCommand } from './command.js';
 import { serialize } from './lib/msg.js';
 import { connectMongo, getGroup, isMongoReady } from './lib/db.js';
 import { isOwner, jidToNum, runtime } from './lib/functions.js';
+import { mountAdmin, upsertUser } from './lib/admin/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -108,6 +109,11 @@ async function startBot() {
       const m = await serialize(sock, raw);
       if (!m.body && !m.message) return;
 
+      // Lightweight user tracking for admin panel (non-blocking)
+      if (m.sender && !m.fromMe) {
+        upsertUser({ jid: m.sender, pushName: m.pushName }).catch(() => {});
+      }
+
       // Antilink
       if (m.isGroup && !m.fromMe && !m.isOwner) {
         let antilinkOn = config.ANTILINK;
@@ -187,7 +193,7 @@ async function startBot() {
   return sock;
 }
 
-// Health server
+// Health + Admin server
 const app = express();
 app.get('/', (_req, res) => {
   res.json({
@@ -196,11 +202,15 @@ app.get('/', (_req, res) => {
     uptime: runtime((Date.now() - startTime) / 1000),
     commands: commands.length,
     version: config.VERSION,
+    admin: '/admin',
   });
 });
 app.get('/health', (_req, res) => res.send('ok'));
+
+mountAdmin(app, { startTime });
+
 app.listen(config.PORT, () =>
-  console.log(`[HTTP] health on :${config.PORT}`)
+  console.log(`[HTTP] health + admin on :${config.PORT}`)
 );
 
 startBot().catch((e) => {
